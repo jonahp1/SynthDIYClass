@@ -1,0 +1,80 @@
+#include <Audio.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+#include <SerialFlash.h>
+
+// GUItool: begin automatically generated code
+AudioSynthWaveformSine   sine1;          //xy=144,48
+AudioSynthWaveformDc     dc1;            //xy=147,85
+AudioEffectMultiply      multiply1;      //xy=273,55
+//AudioOutputUSB           usb1;           //xy=633,93
+AudioOutputI2S           i2s1;           //xy=635,60
+AudioConnection          patchCord1(sine1, 0, multiply1, 0);
+AudioConnection          patchCord2(dc1, 0, multiply1, 1);
+AudioConnection          patchCord3(multiply1, 0, i2s1, 0);
+AudioConnection          patchCord4(multiply1, 0, i2s1, 1);
+//AudioConnection          patchCord5(multiply1, 0, usb1, 0);
+//AudioConnection          patchCord6(multiply1, 0, usb1, 1);
+AudioControlSGTL5000     sgtl5000_1;     //xy=873.5,20
+// GUItool: end automatically generated code
+
+int knob1 = A10;
+int slider_tempo = A21;
+int switch1 = 16;
+int slider2 = A22;
+
+int myArray[8];
+int ledArray[] = {24, 25, 26, 27, 28, 29, 30, 8};
+
+void setup() {
+  // put your setup code here, to run once:
+Serial.begin(9600);
+AudioMemory(20);
+sgtl5000_1.enable();
+sgtl5000_1.volume(0.5);
+
+pinMode(switch1, INPUT);
+for (int x = 0; x < 8; x++){
+  pinMode(ledArray[x], OUTPUT);
+}
+
+}
+
+void loop() {
+ // scrub with slider:
+ // sine1.frequency(myArray[analogRead(slider_tempo) / 128]);
+ 
+ // use slider for tempo:
+/*for (int i = 0; i < 8; i++){
+  if (digitalRead(switch1) == HIGH){
+  sine1.frequency(myArray[i]);
+  delay(analogRead(slider_tempo));
+  }
+}*/
+
+ //use knobs to populate: 
+ myArray[0] = analogRead(A11);
+ myArray[1] = analogRead(A12);
+ myArray[2] = analogRead(A13);
+ myArray[3] = analogRead(A14);
+ myArray[4] = analogRead(A15);
+ myArray[5] = analogRead(A16);
+ myArray[6] = analogRead(A17);
+ myArray[7] = analogRead(A18);
+
+ // w slider controlling scrub of 8
+ // sine1.frequency(myArray[analogRead(slider_tempo) / 128]);
+
+ //with slider controlling speed:
+ for (int i = 0; i < 8; i++){
+  sine1.frequency(myArray[i]);
+  digitalWrite(ledArray[i], HIGH);
+  dc1.amplitude(1, 1);
+  delay(5);
+  float scaledSlider2 = (analogRead(slider2) / 1023.0);
+  dc1.amplitude(0, scaledSlider2 * analogRead(slider_tempo));
+  delay(analogRead(slider_tempo));
+  digitalWrite(ledArray[i], LOW);
+}
+}
