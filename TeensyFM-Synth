@@ -1,0 +1,56 @@
+#include <Audio.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <SD.h>
+#include <SerialFlash.h>
+
+// GUItool: begin automatically generated code
+AudioAmplifier           amp2;           //xy=131,122
+AudioAmplifier           amp1;           //xy=132,184
+AudioSynthWaveformSineModulated sine_fm1;       //xy=286,122
+AudioSynthWaveformModulated waveformMod1;   //xy=322,190
+AudioAmplifier           amp3;           //xy=466,122
+AudioOutputI2S           i2s1;           //xy=588,122
+AudioConnection          patchCord1(amp2, sine_fm1);
+AudioConnection          patchCord2(amp1, 0, waveformMod1, 0);
+AudioConnection          patchCord3(sine_fm1, amp1);
+AudioConnection          patchCord4(sine_fm1, amp3);
+AudioConnection          patchCord5(waveformMod1, amp2);
+AudioConnection          patchCord6(amp3, 0, i2s1, 0);
+AudioConnection          patchCord7(amp3, 0, i2s1, 1);
+AudioControlSGTL5000     sgtl5000_1;     //xy=64.5,20
+// GUItool: end automatically generated code
+
+int knob1 = A14; // sine1 freq
+int knob2 = A15;// sine2 freq
+int knob3 = A16; // 1>2 FM
+int knob4 = A17; // 2>1 FM
+int knob5 = A18; // master vol
+
+void setup() {
+AudioMemory(20); //sets audio buffer size
+sgtl5000_1.enable(); // needed for sgtl5000 to start
+sgtl5000_1.volume(0.5); // initial volume
+
+waveformMod1.begin(WAVEFORM_TRIANGLE_VARIABLE);
+waveformMod1.frequency(261.63);
+waveformMod1.amplitude(1.0);
+}
+
+void loop() {
+// scaledReading = ((rawReading / 1023.0) * (scaleTop - scaleBottom)) + scaleBottom;
+
+int knobbed1 = analogRead(knob1);
+float freq1 = ((knobbed1 / 1023.0) * (4000 - 100)) + 100;
+sine_fm1.frequency(freq1);
+
+
+int knobbed2 = analogRead(knob2);
+float freq2 = ((knobbed2 / 1023.0) * (4000 - 20)) + 20;
+waveformMod1.frequency(freq2);
+
+amp1.gain((float)analogRead(knob3) / 511);
+amp2.gain((float)analogRead(knob4) / 511);
+
+amp3.gain((float)analogRead(knob5) / 1023);
+}
